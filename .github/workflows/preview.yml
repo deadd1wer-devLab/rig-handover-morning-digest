@@ -1,0 +1,55 @@
+# Plan morning-digest § 3 and § 4: the review copy of the digest page on GitHub Pages.
+# The page is built here and never committed (ADR 0003: no previews in the repo).
+# marker: true → banner shows the lane marker (secret LANE_MARKER); false → "no marker set".
+name: preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      night:
+        description: night to render
+        default: '2026-10-28'
+        required: true
+      marker:
+        description: show the lane marker in the banner
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: save the page
+        env:
+          LANE_MARKER: ${{ inputs.marker && secrets.LANE_MARKER || '' }}
+        run: scripts/save-preview.sh "${{ inputs.night }}" site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
