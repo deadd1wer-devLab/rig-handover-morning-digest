@@ -17,6 +17,7 @@ export type DigestRow = {
   owner: string | null;
   runs: number;
   retries: number;
+  fails: number; // any fail this night, even one the job recovered from
   lastStatus: RunStatus;
   lastError: string | null;
   firstAt: string;

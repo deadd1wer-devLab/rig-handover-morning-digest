@@ -19,7 +19,7 @@ describe('readNight', () => {
     const rows = readNight('runs', '2026-10-28')!.rows;
     const job = (j: string) => rows.find((r) => r.job === j)!;
     expect(job('fixtures/refresh')).toMatchObject({ runs: 4, retries: 3, lastStatus: 'ok', lastError: 'upstream 503' });
-    expect(job('notes/backup')).toMatchObject({ runs: 1, retries: 0, lastStatus: 'fail', lastError: 'quota exceeded' });
+    expect(job('notes/backup')).toMatchObject({ runs: 1, retries: 0, lastStatus: 'fail', lastError: 'quota exceeded', fails: 1 });
     expect(job('lane/sync')).toMatchObject({ retries: 1, firstAt: '2026-10-28T23:00:06+01:00', lastAt: '2026-10-29T05:00:04+01:00' });
   });
 
@@ -47,5 +47,15 @@ describe('parseLine', () => {
     expect(parseLine('{"at":"x","job":"a","status":"ok","owner":null}')).toBeNull();
     expect(parseLine('{"at":"2026-10-28T23:00:02+01:00","job":"a","status":"done","owner":null}')).toBeNull();
     expect(parseLine('[]')).toBeNull();
+  });
+});
+
+describe('fails', () => {
+  it('remembers a fail the job recovered from', () => {
+    const text = [
+      '{"at":"2026-01-03T01:00:00+01:00","job":"a","status":"fail","owner":"x","error":"boom"}',
+      '{"at":"2026-01-03T02:00:00+01:00","job":"a","status":"ok","owner":"x"}',
+    ].join('\n');
+    expect(digest('2026-01-03', text).rows[0]).toMatchObject({ lastStatus: 'ok', fails: 1 });
   });
 });

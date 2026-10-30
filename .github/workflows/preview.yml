@@ -41,7 +41,10 @@ jobs:
       - name: save the page
         env:
           LANE_MARKER: ${{ inputs.marker }}
-        run: scripts/save-preview.sh "${{ inputs.night }}" site/index.html
+          NIGHT: ${{ inputs.night }}
+        run: |
+          [[ "$NIGHT" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { echo "night must be YYYY-MM-DD" >&2; exit 1; }
+          scripts/save-preview.sh "$NIGHT" site/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

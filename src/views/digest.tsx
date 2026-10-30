@@ -30,7 +30,10 @@ export function DigestPage({ night }: { night: Night }) {
                 <td>{r.owner ?? dash}</td>
                 <td>{r.runs}</td>
                 <td class={r.retries >= 3 ? 'warn' : undefined}>{r.retries}</td>
-                <td class={r.lastStatus === 'fail' ? 'warn' : undefined}>{r.lastStatus}</td>
+                <td class={r.fails > 0 ? 'warn' : undefined}>
+                  {r.lastStatus}
+                  {r.fails > 0 && r.lastStatus !== 'fail' ? ` (failed ${r.fails}×)` : ''}
+                </td>
                 <td>{r.lastError ?? dash}</td>
                 <td>{r.firstAt}</td>
                 <td>{r.lastAt}</td>
